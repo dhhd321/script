@@ -1,64 +1,72 @@
 --[[
-  NV Cheat Menu - Rayfield Edition
-  Версия: 2.1
-  Загрузка на свой страх и риск!
+  NV Cheat Menu - Rayfield UI Edition
+  Версия: 3.0
+  Использование на свой страх и риск!
 ]]
 
--- Загрузка библиотеки Rayfield UI
+-- Загрузка Rayfield UI библиотеки
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
--- Создание главного окна интерфейса [citation:1][citation:4]
+-- Создание главного окна (используя вашу конфигурацию)
 local Window = Rayfield:CreateWindow({
-    Name = "🔧 NV Cheat Menu",
-    LoadingTitle = "Загрузка интерфейса...",
-    LoadingSubtitle = "by NV",
-    ConfigurationSaving = {
-        Enabled = true, -- Позволяет сохранять настройки
-        FolderName = "NV_Cheat_Config"
-    },
-    Discord = {
-        Enabled = false, -- Можно включить и указать ссылку на Discord
-        Invite = "noinvite",
-        RememberJoins = true
-    },
-    KeySystem = false, -- Можно включить систему ключей при необходимости [citation:3]
-    ToggleUIKeybind = Enum.KeyCode.RightControl, -- Клавиша для показа/скрытия меню
-})
-
--- Уведомление о загрузке [citation:2]
-Rayfield:Notify({
-    Title = "Меню загружено",
-    Content = "Нажмите RightControl, чтобы открыть/скрыть меню.",
-    Duration = 5,
+   Name = "🎮 NV Cheat Menu v3.0",
+   LoadingTitle = "Rayfield Interface Suite",
+   LoadingSubtitle = "by NV | Модифицировано от Sirius",
+   ConfigurationSaving = {
+      Enabled = true,
+      FolderName = "NV_Cheat_Config", -- Папка для сохранения настроек
+      FileName = "NV_Cheat_Settings"
+   },
+   Telegram = {
+      Enabled = true,
+      Invite = "https://t.me/CorescriptsII",
+      RememberJoins = true
+   },
+   KeySystem = false, -- Можно включить систему ключей при необходимости
+   KeySettings = {
+      Title = "NV Cheat Menu - Доступ",
+      Subtitle = "Система ключей",
+      Note = "Обратитесь к автору для получения ключа",
+      FileName = "NV_Key",
+      SaveKey = true,
+      GrabKeyFromSite = false,
+      Key = {"NV2024", "CheatMenuAccess"}
+   }
 })
 
 -- Основные сервисы Roblox
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
+local UserInputService = game:GetService("UserInputService")
 
 -- Локальные переменные
 local Player = Players.LocalPlayer
 local Camera = Workspace.CurrentCamera
 
--- Создание вкладок, как в вашем исходном меню [citation:2]
-local MainTab = Window:CreateTab("Основные", 4483362458) -- Иконка: шестерёнка
-local VisualTab = Window:CreateTab("Визуал", 4483362458)
-local PlayerTab = Window:CreateTab("Игрок", 4483362458)
+-- Создание вкладок
+local MainTab = Window:CreateTab("Главная", "rbxassetid://4483345998") -- Иконка шестерёнки
+local VisualsTab = Window:CreateTab("Визуал", "rbxassetid://4483362458")
+local PlayerTab = Window:CreateTab("Игрок", "rbxassetid://4483362458")
+local SettingsTab = Window:CreateTab("Настройки", "rbxassetid://4483362458")
 
--- Разделы для организации [citation:2]
+-- Создание разделов
 local CombatSection = MainTab:CreateSection("Боевые функции")
-local MoveSection = MainTab:CreateSection("Передвижение")
-local VisualSection = VisualTab:CreateSection("Эффекты")
-local ModSection = PlayerTab:CreateSection("Модификации")
+local MovementSection = MainTab:CreateSection("Передвижение")
+local ESPsection = VisualsTab:CreateSection("ESP / Визуализация")
+local EffectsSection = VisualsTab:CreateSection("Эффекты")
+local CharacterSection = PlayerTab:CreateSection("Персонаж")
+local ConfigSection = SettingsTab:CreateSection("Конфигурация")
+local InfoSection = SettingsTab:CreateSection("Информация")
 
--- Глобальные переменные для состояний и соединений
+-- Глобальные состояния и соединения
 local CheatStates = {}
 local Connections = {}
+local ESPFolders = {}
 
--- ФУНКЦИИ-УТИЛИТЫ (из вашего старого скрипта)
+-- Утилитарные функции
 local function GetCharacter()
-    return Player.Character
+    return Player.Character or Player.CharacterAdded:Wait()
 end
 
 local function GetRootPart()
@@ -71,15 +79,19 @@ local function GetHumanoid()
     return character and character:FindFirstChild("Humanoid")
 end
 
-local function FindNearestPlayer(range)
+local function FindNearestPlayer(range, ignoreTeam)
     local myRoot = GetRootPart()
-    if not myRoot then return nil end
+    if not myRoot then return nil, 0 end
     
     local nearestPlayer = nil
     local nearestDistance = range or 500
     
     for _, target in pairs(Players:GetPlayers()) do
         if target ~= Player and target.Character then
+            if ignoreTeam and target.Team and Player.Team and target.Team == Player.Team then
+                continue
+            end
+            
             local targetRoot = target.Character:FindFirstChild("HumanoidRootPart")
             if targetRoot then
                 local distance = (myRoot.Position - targetRoot.Position).Magnitude
@@ -90,78 +102,151 @@ local function FindNearestPlayer(range)
             end
         end
     end
-    return nearestPlayer
+    
+    return nearestPlayer, nearestDistance
 end
 
--- 1. АИМБОТ (переделан на Toggle из Rayfield) [citation:4]
+-- 1. АИМБОТ система
 local AimBotToggle = CombatSection:CreateToggle({
-    Name = "Включить Аимбот",
+    Name = "Аимбот",
     CurrentValue = false,
-    Flag = "AimBotToggle",
+    Flag = "AimBotEnabled",
     Callback = function(Value)
         CheatStates.AimBot = Value
+        
         if Value then
             Connections.AimBot = RunService.RenderStepped:Connect(function()
-                local target = FindNearestPlayer(AimBotRangeSlider.CurrentValue)
+                local target, distance = FindNearestPlayer(AimBotRangeSlider.CurrentValue, IgnoreTeamToggle.CurrentValue)
+                
                 if target and target.Character then
-                    local targetRoot = target.Character:FindFirstChild(AimBotPartDropdown.CurrentOption)
-                    if targetRoot and Camera then
-                        Camera.CFrame = CFrame.new(Camera.CFrame.Position, targetRoot.Position)
+                    local targetPart = target.Character:FindFirstChild(AimBotPartDropdown.CurrentOption)
+                    if targetPart and Camera then
+                        local prediction = 0
+                        if AimPredictionToggle.CurrentValue then
+                            prediction = (distance / AimBotPredictionSlider.CurrentValue) * (targetPart.Velocity.Magnitude / 100)
+                        end
+                        
+                        local targetPos = targetPart.Position + targetPart.Velocity * prediction
+                        
+                        if SmoothAimToggle.CurrentValue then
+                            local smoothFactor = AimSmoothnessSlider.CurrentValue / 100
+                            Camera.CFrame = Camera.CFrame:Lerp(
+                                CFrame.new(Camera.CFrame.Position, targetPos),
+                                1 - smoothFactor
+                            )
+                        else
+                            Camera.CFrame = CFrame.new(Camera.CFrame.Position, targetPos)
+                        end
                     end
                 end
             end)
-            Rayfield:Notify({Title = "Аимбот", Content = "Функция включена.", Duration = 2})
+            
+            Rayfield:Notify({
+                Title = "Аимбот активирован",
+                Content = "Наведение на ближайшего противника",
+                Duration = 2,
+            })
         else
-            if Connections.AimBot then Connections.AimBot:Disconnect() end
+            if Connections.AimBot then
+                Connections.AimBot:Disconnect()
+                Connections.AimBot = nil
+            end
         end
     end,
 })
 
--- Настройки аимбота: Слайдер для дистанции [citation:4]
+-- Настройки аимбота
 local AimBotRangeSlider = CombatSection:CreateSlider({
     Name = "Дальность аимбота",
     Range = {50, 1000},
-    Increment = 50,
+    Increment = 25,
     Suffix = "studs",
-    CurrentValue = 500,
+    CurrentValue = 1000,
     Flag = "AimBotRange",
     Callback = function(Value) end,
 })
 
--- Настройки аимбота: Выпадающий список для части тела [citation:4]
 local AimBotPartDropdown = CombatSection:CreateDropdown({
-    Name = "Целиться в",
-    Options = {"HumanoidRootPart", "Head", "UpperTorso"},
-    CurrentOption = "HumanoidRootPart",
+    Name = "Цель для аимбота",
+    Options = {"Head", "HumanoidRootPart", "UpperTorso"},
+    CurrentOption = "Head",
     Flag = "AimBotPart",
     Callback = function(Option) end,
 })
 
--- 2. БАННИ-ХОП
-local BunnyHopToggle = MoveSection:CreateToggle({
-    Name = "Включить Bunny Hop",
+local SmoothAimToggle = CombatSection:CreateToggle({
+    Name = "Плавный аим",
+    CurrentValue = true,
+    Flag = "SmoothAimEnabled",
+    Callback = function(Value) end,
+})
+
+local AimSmoothnessSlider = CombatSection:CreateSlider({
+    Name = "Сглаживание аима",
+    Range = {1, 100},
+    Increment = 5,
+    Suffix = "%",
+    CurrentValue = 30,
+    Flag = "AimSmoothness",
+    Callback = function(Value) end,
+})
+
+local AimPredictionToggle = CombatSection:CreateToggle({
+    Name = "Предсказание движения",
     CurrentValue = false,
-    Flag = "BunnyHopToggle",
+    Flag = "AimPrediction",
+    Callback = function(Value) end,
+})
+
+local AimBotPredictionSlider = CombatSection:CreateSlider({
+    Name = "Сила предсказания",
+    Range = {10, 100},
+    Increment = 5,
+    Suffix = "",
+    CurrentValue = 50,
+    Flag = "PredictionStrength",
+    Callback = function(Value) end,
+})
+
+local IgnoreTeamToggle = CombatSection:CreateToggle({
+    Name = "Игнорировать свою команду",
+    CurrentValue = true,
+    Flag = "IgnoreTeam",
+    Callback = function(Value) end,
+})
+
+-- 2. БАННИ-ХОП
+local BunnyHopToggle = MovementSection:CreateToggle({
+    Name = "Банни-хоп",
+    CurrentValue = false,
+    Flag = "BunnyHopEnabled",
     Callback = function(Value)
         CheatStates.BunnyHop = Value
+        
         if Value then
             Connections.BunnyHop = RunService.Heartbeat:Connect(function()
                 local humanoid = GetHumanoid()
-                if humanoid then humanoid.Jump = true end
+                if humanoid and humanoid.FloorMaterial == Enum.Material.Air then
+                    humanoid.Jump = true
+                end
             end)
         else
-            if Connections.BunnyHop then Connections.BunnyHop:Disconnect() end
+            if Connections.BunnyHop then
+                Connections.BunnyHop:Disconnect()
+                Connections.BunnyHop = nil
+            end
         end
     end,
 })
 
--- 3. КРУТИЛКА (Спин) [citation:4]
-local SpinToggle = MoveSection:CreateToggle({
-    Name = "Включить Крутилку",
+-- 3. КРУТИЛКА
+local SpinToggle = MovementSection:CreateToggle({
+    Name = "Крутилка",
     CurrentValue = false,
-    Flag = "SpinToggle",
+    Flag = "SpinEnabled",
     Callback = function(Value)
         CheatStates.Spin = Value
+        
         if Value then
             Connections.Spin = RunService.RenderStepped:Connect(function()
                 local root = GetRootPart()
@@ -170,17 +255,19 @@ local SpinToggle = MoveSection:CreateToggle({
                 end
             end)
         else
-            if Connections.Spin then Connections.Spin:Disconnect() end
+            if Connections.Spin then
+                Connections.Spin:Disconnect()
+                Connections.Spin = nil
+            end
         end
     end,
 })
 
--- Слайдер для скорости кручения [citation:4]
-local SpinSpeedSlider = MoveSection:CreateSlider({
-    Name = "Скорость кручения",
+local SpinSpeedSlider = MovementSection:CreateSlider({
+    Name = "Скорость вращения",
     Range = {5, 50},
     Increment = 1,
-    Suffix = "",
+    Suffix = "град/кадр",
     CurrentValue = 12,
     Flag = "SpinSpeed",
     Callback = function(Value) end,
@@ -188,20 +275,30 @@ local SpinSpeedSlider = MoveSection:CreateSlider({
 
 -- 4. АВТОСТРЕЛЬБА
 local AutoShootToggle = CombatSection:CreateToggle({
-    Name = "Включить Автострельбу",
+    Name = "Автострельба",
     CurrentValue = false,
-    Flag = "AutoShootToggle",
+    Flag = "AutoShootEnabled",
     Callback = function(Value)
         CheatStates.AutoShoot = Value
+        
         if Value then
             Connections.AutoShoot = RunService.RenderStepped:Connect(function()
-                local target = FindNearestPlayer(100)
+                local target, distance = FindNearestPlayer(100, IgnoreTeamToggle.CurrentValue)
+                
                 if target and target.Character then
                     local character = GetCharacter()
                     if character then
                         for _, tool in pairs(character:GetChildren()) do
                             if tool:IsA("Tool") then
-                                tool:Activate()
+                                local remote = tool:FindFirstChildOfClass("RemoteEvent") or 
+                                              tool:FindFirstChildOfClass("RemoteFunction")
+                                if remote then
+                                    pcall(function()
+                                        remote:FireServer()
+                                    end)
+                                else
+                                    tool:Activate()
+                                end
                                 break
                             end
                         end
@@ -209,76 +306,265 @@ local AutoShootToggle = CombatSection:CreateToggle({
                 end
             end)
         else
-            if Connections.AutoShoot then Connections.AutoShoot:Disconnect() end
+            if Connections.AutoShoot then
+                Connections.AutoShoot:Disconnect()
+                Connections.AutoShoot = nil
+            end
         end
     end,
 })
 
--- 5. ESP/WALLHACK (НОВАЯ ФУНКЦИЯ - Визуал)
-local ESPToggle = VisualSection:CreateToggle({
-    Name = "Включить ESP (Wallhack)",
+-- 5. ESP / Wallhack система
+local ESPToggle = ESPsection:CreateToggle({
+    Name = "ESP (Подсветка игроков)",
     CurrentValue = false,
-    Flag = "ESPToggle",
+    Flag = "ESPEnabled",
     Callback = function(Value)
         CheatStates.ESP = Value
+        
         if Value then
-            -- Простая реализация подсветки игроков
-            for _, target in pairs(Players:GetPlayers()) do
-                if target ~= Player and target.Character then
-                    local highlight = Instance.new("Highlight")
-                    highlight.Adornee = target.Character
-                    highlight.FillColor = Color3.fromRGB(255, 0, 0)
-                    highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
-                    highlight.Parent = target.Character
-                    Connections["ESP_"..target.Name] = highlight
+            -- Создаем папку для ESP объектов
+            ESPFolders.main = Instance.new("Folder")
+            ESPFolders.main.Name = "NV_ESP"
+            ESPFolders.main.Parent = workspace
+            
+            local function CreateESP(player)
+                if player == Player then return end
+                
+                local character = player.Character
+                if not character then return end
+                
+                -- Highlight для подсветки
+                local highlight = Instance.new("Highlight")
+                highlight.Name = player.Name .. "_ESP"
+                highlight.Adornee = character
+                highlight.FillColor = player.Team == Player.Team and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+                highlight.FillTransparency = 0.7
+                highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+                highlight.OutlineTransparency = 0
+                highlight.Parent = ESPFolders.main
+                
+                -- BillboardGui для отображения имени и дистанции
+                if character:FindFirstChild("Head") then
+                    local billboard = Instance.new("BillboardGui")
+                    billboard.Name = "ESP_Info"
+                    billboard.Adornee = character.Head
+                    billboard.Size = UDim2.new(0, 200, 0, 50)
+                    billboard.StudsOffset = Vector3.new(0, 3, 0)
+                    billboard.AlwaysOnTop = true
+                    billboard.Parent = character.Head
+                    
+                    local nameLabel = Instance.new("TextLabel")
+                    nameLabel.Name = "NameLabel"
+                    nameLabel.Size = UDim2.new(1, 0, 0.5, 0)
+                    nameLabel.Position = UDim2.new(0, 0, 0, 0)
+                    nameLabel.BackgroundTransparency = 1
+                    nameLabel.Text = player.Name
+                    nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+                    nameLabel.Font = Enum.Font.SourceSansBold
+                    nameLabel.TextSize = 14
+                    nameLabel.Parent = billboard
+                    
+                    local distanceLabel = Instance.new("TextLabel")
+                    distanceLabel.Name = "DistanceLabel"
+                    distanceLabel.Size = UDim2.new(1, 0, 0.5, 0)
+                    distanceLabel.Position = UDim2.new(0, 0, 0.5, 0)
+                    distanceLabel.BackgroundTransparency = 1
+                    distanceLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+                    distanceLabel.Font = Enum.Font.SourceSans
+                    distanceLabel.TextSize = 12
+                    distanceLabel.Parent = billboard
+                    
+                    -- Обновление дистанции
+                    Connections["ESP_Update_" .. player.Name] = RunService.RenderStepped:Connect(function()
+                        if character and character.Parent and GetRootPart() then
+                            local distance = (GetRootPart().Position - character:GetPivot().Position).Magnitude
+                            distanceLabel.Text = string.format("[%d studs]", math.floor(distance))
+                        end
+                    end)
                 end
             end
+            
+            -- Создаем ESP для всех существующих игроков
+            for _, player in pairs(Players:GetPlayers()) do
+                if player.Character then
+                    CreateESP(player)
+                end
+                
+                -- Отслеживаем появление новых персонажей
+                player.CharacterAdded:Connect(function(character)
+                    wait(0.5) -- Ждем загрузки персонажа
+                    CreateESP(player)
+                end)
+            end
+            
+            -- Отслеживаем новых игроков
+            Players.PlayerAdded:Connect(function(player)
+                player.CharacterAdded:Connect(function(character)
+                    wait(0.5)
+                    CreateESP(player)
+                end)
+            end)
+            
         else
-            -- Удаление подсветки
-            for name, conn in pairs(Connections) do
-                if string.find(name, "ESP_") and conn then
-                    conn:Destroy()
+            -- Удаляем все ESP объекты
+            if ESPFolders.main then
+                ESPFolders.main:Destroy()
+                ESPFolders.main = nil
+            end
+            
+            -- Отключаем все соединения ESP
+            for name, connection in pairs(Connections) do
+                if string.find(name, "ESP_") then
+                    connection:Disconnect()
                     Connections[name] = nil
                 end
             end
+            
+            -- Удаляем BillboardGui у игроков
+            for _, player in pairs(Players:GetPlayers()) do
+                if player.Character and player.Character:FindFirstChild("Head") then
+                    local billboard = player.Character.Head:FindFirstChild("ESP_Info")
+                    if billboard then
+                        billboard:Destroy()
+                    end
+                end
+            end
         end
     end,
 })
 
--- 6. ИЗМЕНЕНИЕ СКОРОСТИ И ПРЫЖКА (Игрок) [citation:2]
-local SpeedSlider = ModSection:CreateSlider({
+-- 6. ИЗМЕНЕНИЕ ХАРАКТЕРИСТИК ИГРОКА
+local SpeedToggle = CharacterSection:CreateToggle({
+    Name = "Изменить скорость",
+    CurrentValue = false,
+    Flag = "SpeedModEnabled",
+    Callback = function(Value)
+        if Value then
+            local humanoid = GetHumanoid()
+            if humanoid then
+                humanoid.WalkSpeed = SpeedSlider.CurrentValue
+            end
+            
+            Connections.SpeedMod = Player.CharacterAdded:Connect(function(character)
+                wait(0.5)
+                local hum = character:WaitForChild("Humanoid")
+                hum.WalkSpeed = SpeedSlider.CurrentValue
+            end)
+        else
+            if Connections.SpeedMod then
+                Connections.SpeedMod:Disconnect()
+                Connections.SpeedMod = nil
+            end
+            
+            local humanoid = GetHumanoid()
+            if humanoid then
+                humanoid.WalkSpeed = 16
+            end
+        end
+    end,
+})
+
+local SpeedSlider = CharacterSection:CreateSlider({
     Name = "Скорость передвижения",
     Range = {16, 200},
     Increment = 4,
     Suffix = "studs/sec",
-    CurrentValue = 16,
-    Flag = "WalkSpeed",
+    CurrentValue = 50,
+    Flag = "WalkSpeedValue",
     Callback = function(Value)
-        local humanoid = GetHumanoid()
-        if humanoid then
-            humanoid.WalkSpeed = Value
+        if SpeedToggle.CurrentValue then
+            local humanoid = GetHumanoid()
+            if humanoid then
+                humanoid.WalkSpeed = Value
+            end
         end
     end,
 })
 
-local JumpSlider = ModSection:CreateSlider({
+local JumpToggle = CharacterSection:CreateToggle({
+    Name = "Изменить силу прыжка",
+    CurrentValue = false,
+    Flag = "JumpModEnabled",
+    Callback = function(Value)
+        if Value then
+            local humanoid = GetHumanoid()
+            if humanoid then
+                humanoid.JumpPower = JumpSlider.CurrentValue
+            end
+            
+            Connections.JumpMod = Player.CharacterAdded:Connect(function(character)
+                wait(0.5)
+                local hum = character:WaitForChild("Humanoid")
+                hum.JumpPower = JumpSlider.CurrentValue
+            end)
+        else
+            if Connections.JumpMod then
+                Connections.JumpMod:Disconnect()
+                Connections.JumpMod = nil
+            end
+            
+            local humanoid = GetHumanoid()
+            if humanoid then
+                humanoid.JumpPower = 50
+            end
+        end
+    end,
+})
+
+local JumpSlider = CharacterSection:CreateSlider({
     Name = "Сила прыжка",
     Range = {50, 500},
     Increment = 10,
     Suffix = "",
-    CurrentValue = 50,
-    Flag = "JumpPower",
+    CurrentValue = 100,
+    Flag = "JumpPowerValue",
     Callback = function(Value)
-        local humanoid = GetHumanoid()
-        if humanoid then
-            humanoid.JumpPower = Value
+        if JumpToggle.CurrentValue then
+            local humanoid = GetHumanoid()
+            if humanoid then
+                humanoid.JumpPower = Value
+            end
         end
     end,
 })
 
--- 7. КНОПКА ЭКСТРЕННОГО ОТКЛЮЧЕНИЯ (важная функция) [citation:2]
-local EmergencyButton = PlayerTab:CreateButton({
-    Name = "⛔ ЭКСТРЕННОЕ ОТКЛЮЧЕНИЕ (F10)",
+-- 7. НОЧНОЕ ЗРЕНИЕ
+local NightVisionToggle = EffectsSection:CreateToggle({
+    Name = "Ночное зрение",
+    CurrentValue = false,
+    Flag = "NightVisionEnabled",
+    Callback = function(Value)
+        if Value then
+            local lighting = game:GetService("Lighting")
+            lighting.Ambient = Color3.fromRGB(200, 200, 200)
+            lighting.Brightness = 2
+            lighting.OutdoorAmbient = Color3.fromRGB(128, 128, 128)
+            
+            Connections.NightVision = lighting.Changed:Connect(function()
+                if CheatStates.NightVision then
+                    lighting.Ambient = Color3.fromRGB(200, 200, 200)
+                    lighting.Brightness = 2
+                end
+            end)
+        else
+            if Connections.NightVision then
+                Connections.NightVision:Disconnect()
+                Connections.NightVision = nil
+            end
+            
+            local lighting = game:GetService("Lighting")
+            lighting.Ambient = Color3.fromRGB(0, 0, 0)
+            lighting.Brightness = 1
+            lighting.OutdoorAmbient = Color3.fromRGB(0, 0, 0)
+        end
+        CheatStates.NightVision = Value
+    end,
+})
+
+-- КНОПКА ЭКСТРЕННОГО ОТКЛЮЧЕНИЯ
+local EmergencyButton = ConfigSection:CreateButton({
+    Name = "⛔ ЭКСТРЕННОЕ ОТКЛЮЧЕНИЕ ВСЕГО",
     Callback = function()
         -- Отключаем все тогглы
         AimBotToggle:Set(false)
@@ -286,42 +572,58 @@ local EmergencyButton = PlayerTab:CreateButton({
         SpinToggle:Set(false)
         AutoShootToggle:Set(false)
         ESPToggle:Set(false)
+        SpeedToggle:Set(false)
+        JumpToggle:Set(false)
+        NightVisionToggle:Set(false)
         
-        -- Сбрасываем скорость и прыжок
+        -- Сбрасываем все настройки персонажа
         local humanoid = GetHumanoid()
         if humanoid then
             humanoid.WalkSpeed = 16
             humanoid.JumpPower = 50
         end
         
-        -- Уведомление
         Rayfield:Notify({
             Title = "Экстренное отключение",
-            Content = "Все читы отключены!",
+            Content = "Все функции были отключены!",
             Duration = 4,
-            Image = 4483345998,
+            Image = "rbxassetid://4483345998"
         })
     end,
 })
 
--- Горячая клавиша для экстренного отключения (F10)
-game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
-    if not gameProcessed and input.KeyCode == Enum.KeyCode.F10 then
+-- Горячие клавиши
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    
+    if input.KeyCode == Enum.KeyCode.F9 then
+        -- Скрыть/показать интерфейс
+        Rayfield:Toggle()
+    elseif input.KeyCode == Enum.KeyCode.F10 then
         EmergencyButton.Callback()
     end
 end)
 
--- ФУТЕР С ИНФОРМАЦИЕЙ [citation:4]
-local InfoSection = PlayerTab:CreateSection("Информация")
-local InfoLabel = PlayerTab:CreateLabel("Управление:")
-local InfoLabel2 = PlayerTab:CreateLabel("RightControl - Показать/скрыть меню")
-local InfoLabel3 = PlayerTab:CreateLabel("F10 - Экстренное отключение")
-local WarningLabel = PlayerTab:CreateParagraph({
-    Title = "ВНИМАНИЕ",
-    Content = "Использование читов может привести к блокировке аккаунта. Вы используете это ПО на свой страх и риск."
+-- Информационная панель
+InfoSection:CreateLabel("Управление:")
+InfoSection:CreateLabel("K - Показать/скрыть меню")
+InfoSection:CreateLabel("F10 - Экстренное отключение")
+
+InfoSection:CreateParagraph({
+    Title = "⚠️ ВНИМАНИЕ",
+    Content = "Использование читов нарушает правила Roblox и может привести к блокировке аккаунта. Автор не несет ответственности за последствия использования данного ПО."
 })
 
-print("======================================")
-print("NV Cheat Menu (Rayfield) загружен!")
-print("Управление: RightControl, F10")
-print("======================================")
+-- Уведомление о загрузке
+Rayfield:Notify({
+    Title = "NV Cheat Menu v3.0",
+    Content = "Меню успешно загружено! Нажмите F9 для открытия.",
+    Duration = 6,
+    Image = "rbxassetid://4483345998"
+})
+
+print("========================================")
+print("NV Cheat Menu v3.0 (Rayfield UI Edition)")
+print("Успешно инициализирован!")
+print("Управление: F9 - меню, F10 - экстренное отключение")
+print("========================================")
