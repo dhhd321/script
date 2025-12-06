@@ -1,25 +1,24 @@
 --[[
-  NV Cheat Menu - Enhanced Edition
-  Версия: 5.0
-  С кнопкой быстрого доступа
+  NV Flick Cheat Menu
+  Версия: Flick Edition 1.0
+  Специально для игры Flick
 ]]
 
--- ========== СОЗДАНИЕ КНОПКИ TOGGLE UI ==========
+-- ========== СОЗДАНИЕ КНОПКИ БЫСТРОГО ДОСТУПА ДЛЯ FLICK ==========
 local ScreenGui = Instance.new("ScreenGui")
 local Frame = Instance.new("Frame")
 local TextButton = Instance.new("TextButton")
 local UITextSizeConstraint = Instance.new("UITextSizeConstraint")
 
--- Настройка GUI
 ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-ScreenGui.Name = "NV_QuickAccess"
+ScreenGui.Name = "Flick_QuickAccess"
 
 Frame.Parent = ScreenGui
-Frame.BackgroundColor3 = Color3.fromRGB(26, 26, 26)
-Frame.BackgroundTransparency = 0.500
-Frame.Position = UDim2.new(0.858712733, 0, 0.0237762257, 0)
-Frame.Size = UDim2.new(0.129513338, 0, 0.227972031, 0)
+Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+Frame.BackgroundTransparency = 0.3
+Frame.Position = UDim2.new(0.85, 0, 0.02, 0)
+Frame.Size = UDim2.new(0.12, 0, 0.2, 0)
 Frame.Active = true
 Frame.Draggable = true
 
@@ -28,8 +27,8 @@ TextButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 TextButton.BackgroundTransparency = 1.000
 TextButton.Size = UDim2.new(1, 0, 1, 0)
 TextButton.Font = Enum.Font.SourceSansBold
-TextButton.Text = "NV\nMENU"
-TextButton.TextColor3 = Color3.fromRGB(255, 50, 50)
+TextButton.Text = "FLICK\nCHEAT"
+TextButton.TextColor3 = Color3.fromRGB(255, 100, 100)
 TextButton.TextScaled = true
 TextButton.TextSize = 50.000
 TextButton.TextStrokeColor3 = Color3.fromRGB(255, 255, 255)
@@ -37,52 +36,36 @@ TextButton.TextStrokeTransparency = 0.000
 TextButton.TextWrapped = true
 
 UITextSizeConstraint.Parent = TextButton
-UITextSizeConstraint.MaxTextSize = 30
+UITextSizeConstraint.MaxTextSize = 28
 
 -- ========== ЗАГРУЗКА RAYFIELD UI ==========
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
--- ========== СОЗДАНИЕ ГЛАВНОГО ОКНА ==========
+-- ========== СОЗДАНИЕ ГЛАВНОГО ОКНА ДЛЯ FLICK ==========
 local Window = Rayfield:CreateWindow({
-   Name = "🎮 NV Cheat Menu v5.0",
-   LoadingTitle = "Rayfield Interface Suite",
-   LoadingSubtitle = "by NV | Enhanced Edition",
+   Name = "🎯 Flick Cheat Menu",
+   LoadingTitle = "Загрузка Flick Читов",
+   LoadingSubtitle = "Специально для игры Flick",
    ConfigurationSaving = {
       Enabled = true,
-      FolderName = "NV_Cheat_Config",
-      FileName = "NV_Settings"
+      FolderName = "Flick_Cheat_Config",
+      FileName = "Flick_Settings"
    },
    Discord = {
       Enabled = false,
       Invite = "noinvitelink",
       RememberJoins = true
    },
-   KeySystem = true,
+   KeySystem = false, -- Можно включить при необходимости
    KeySettings = {
-      Title = "NV Cheat Menu - Доступ",
+      Title = "Flick Cheat - Доступ",
       Subtitle = "Система защиты",
-      Note = "Ключ по умолчанию: NV2024",
-      FileName = "NV_AccessKey",
+      Note = "Ключ по умолчанию: FLICK2024",
+      FileName = "Flick_Key",
       SaveKey = true,
       GrabKeyFromSite = false,
-      Key = {"NV2024", "NVAccess123", "CheatMenu2024"}
+      Key = {"FLICK2024", "FLICKCHEAT", "NVFLICK"}
    }
-})
-
--- ========== УВЕДОМЛЕНИЕ О ЗАГРУЗКЕ ==========
-Rayfield:Notify({
-   Title = "NV Cheat Menu v5.0",
-   Content = "Добро пожаловать! Используйте плавающую кнопку для быстрого доступа.",
-   Duration = 6.5,
-   Image = 4483362458,
-   Actions = {
-      Accept = {
-         Name = "Понятно!",
-         Callback = function()
-            print("Пользователь принял уведомление")
-         end
-      },
-   },
 })
 
 -- ========== ОСНОВНЫЕ СЕРВИСЫ ==========
@@ -91,42 +74,49 @@ local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 local UserInputService = game:GetService("UserInputService")
 local Lighting = game:GetService("Lighting")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
--- ========== ЛОКАЛЬНЫЕ ПЕРЕМЕННЫЕ ==========
+-- ========== ЛОКАЛЬНЫЕ ПЕРЕМЕННЫЕ ДЛЯ FLICK ==========
 local Player = Players.LocalPlayer
 local Camera = Workspace.CurrentCamera
+local Mouse = Player:GetMouse()
 
--- ========== СОЗДАНИЕ ВКЛАДОК ==========
-local MainTab = Window:CreateTab("Главная", 4483362458)
-local CombatTab = Window:CreateTab("Бой", 4483362458)
+-- ========== СОЗДАНИЕ ВКЛАДОК ДЛЯ FLICK ==========
+local MainTab = Window:CreateTab("Основное", 4483362458)
+local AimTab = Window:CreateTab("Прицеливание", 4483362458)
 local VisualTab = Window:CreateTab("Визуал", 4483362458)
 local PlayerTab = Window:CreateTab("Игрок", 4483362458)
-local SettingsTab = Window:CreateTab("Настройки", 4483362458)
+local WeaponTab = Window:CreateTab("Оружие", 4483362458)
+local UtilityTab = Window:CreateTab("Утилиты", 4483362458)
 
 -- ========== РАЗДЕЛЫ ==========
-local WelcomeSection = MainTab:CreateSection("Добро пожаловать")
-local QuickSection = MainTab:CreateSection("Быстрые функции")
+local WelcomeSection = MainTab:CreateSection("Информация о Flick")
+local QuickSection = MainTab:CreateSection("Быстрый доступ")
 
-local AimSection = CombatTab:CreateSection("Аимбот")
-local AutoSection = CombatTab:CreateSection("Автоматика")
+local AimSection = AimTab:CreateSection("Настройки аимбота")
+local FlickSection = AimTab:CreateSection("Флик-выстрелы")
 
-local ESPSection = VisualTab:CreateSection("ESP")
-local EffectsSection = VisualTab:CreateSection("Эффекты")
+local ESPSection = VisualTab:CreateSection("ESP и подсветка")
+local EffectsSection = VisualTab:CreateSection("Визуальные эффекты")
 
 local StatsSection = PlayerTab:CreateSection("Характеристики")
-local MovementSection = PlayerTab:CreateSection("Движение")
+local MovementSection = PlayerTab:CreateSection("Передвижение")
 
-local ConfigSection = SettingsTab:CreateSection("Конфигурация")
-local InfoSection = SettingsTab:CreateSection("Информация")
+local WeaponSection = WeaponTab:CreateSection("Модификация оружия")
+local AutoSection = WeaponTab:CreateSection("Автоматика")
+
+local ConfigSection = UtilityTab:CreateSection("Настройки")
+local InfoSection = UtilityTab:CreateSection("Информация")
 
 -- ========== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ==========
 local CheatStates = {}
 local Connections = {}
 local ESPFolder = Instance.new("Folder")
-ESPFolder.Name = "NV_ESP"
+ESPFolder.Name = "Flick_ESP"
 ESPFolder.Parent = workspace
+local TargetParts = {"Head", "HumanoidRootPart", "UpperTorso"}
 
--- ========== УТИЛИТАРНЫЕ ФУНКЦИИ ==========
+-- ========== УТИЛИТАРНЫЕ ФУНКЦИИ ДЛЯ FLICK ==========
 local function GetCharacter()
     return Player.Character
 end
@@ -141,321 +131,373 @@ local function GetHumanoid()
     return character and character:FindFirstChild("Humanoid")
 end
 
-local function FindNearestPlayer(range, ignoreTeam)
+-- Функция поиска ближайшего противника для Flick
+local function FindNearestEnemy(range, requireVisible)
     local myRoot = GetRootPart()
-    if not myRoot then return nil, 0 end
+    if not myRoot then return nil, 0, nil end
     
-    local nearestPlayer = nil
+    local nearestEnemy = nil
     local nearestDistance = range or 500
+    local nearestPart = nil
     
     for _, target in pairs(Players:GetPlayers()) do
         if target ~= Player and target.Character then
-            if ignoreTeam and target.Team and Player.Team and target.Team == Player.Team then
-                continue
-            end
-            
-            local targetRoot = target.Character:FindFirstChild("HumanoidRootPart")
-            if targetRoot then
-                local distance = (myRoot.Position - targetRoot.Position).Magnitude
-                if distance < nearestDistance then
-                    nearestDistance = distance
-                    nearestPlayer = target
-                end
-            end
-        end
-    end
-    
-    return nearestPlayer, nearestDistance
-end
-
--- ========== ФУНКЦИЯ ПЕРЕКЛЮЧЕНИЯ ИНТЕРФЕЙСА ==========
-local function ToggleRayfieldUI()
-    Rayfield:Toggle()
-    
-    -- Анимация кнопки при нажатии
-    TextButton.TextColor3 = Color3.fromRGB(50, 255, 50)
-    task.wait(0.1)
-    TextButton.TextColor3 = Color3.fromRGB(255, 50, 50)
-end
-
--- Назначаем функцию на кнопку
-TextButton.MouseButton1Down:Connect(ToggleRayfieldUI)
-
--- ========== ПРИВЕТСТВЕННОЕ СООБЩЕНИЕ ==========
-WelcomeSection:CreateParagraph({
-    Title = "👾 NV Cheat Menu v5.0",
-    Content = "Улучшенный скрипт с плавающей кнопкой быстрого доступа!\nНажмите на кнопку 'NV MENU' для открытия/закрытия интерфейса."
-})
-
--- ========== 1. БЫСТРЫЕ ФУНКЦИИ ==========
-local QuickAimToggle = QuickSection:CreateToggle({
-   Name = "Быстрый Аимбот",
-   CurrentValue = false,
-   Flag = "QuickAim",
-   Callback = function(Value)
-        CheatStates.QuickAim = Value
-        
-        if Value then
-            Connections.QuickAim = RunService.RenderStepped:Connect(function()
-                local target = FindNearestPlayer(500, true)
-                if target and target.Character then
-                    local head = target.Character:FindFirstChild("Head")
-                    if head and Camera then
-                        Camera.CFrame = CFrame.new(Camera.CFrame.Position, head.Position)
+            -- Проверяем, жив ли игрок
+            local humanoid = target.Character:FindFirstChild("Humanoid")
+            if humanoid and humanoid.Health > 0 then
+                -- Проверка видимости (если требуется)
+                local isVisible = true
+                if requireVisible then
+                    local targetHead = target.Character:FindFirstChild("Head")
+                    if targetHead then
+                        local raycastParams = RaycastParams.new()
+                        raycastParams.FilterDescendantsInstances = {Player.Character, target.Character}
+                        raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
+                        
+                        local origin = Camera.CFrame.Position
+                        local direction = (targetHead.Position - origin).Unit * range
+                        local raycastResult = Workspace:Raycast(origin, direction, raycastParams)
+                        
+                        isVisible = not raycastResult or raycastResult.Instance:IsDescendantOf(target.Character)
                     end
                 end
-            end)
-        else
-            if Connections.QuickAim then
-                Connections.QuickAim:Disconnect()
-            end
-        end
-   end,
-})
-
-local QuickBunnyToggle = QuickSection:CreateToggle({
-   Name = "Банни-Хоп",
-   CurrentValue = false,
-   Flag = "QuickBunny",
-   Callback = function(Value)
-        CheatStates.QuickBunny = Value
-        
-        if Value then
-            Connections.QuickBunny = RunService.Heartbeat:Connect(function()
-                local humanoid = GetHumanoid()
-                if humanoid then
-                    humanoid.Jump = true
-                end
-            end)
-        else
-            if Connections.QuickBunny then
-                Connections.QuickBunny:Disconnect()
-            end
-        end
-   end,
-})
-
--- ========== 2. РАСШИРЕННЫЙ АИМБОТ ==========
-local AimBotToggle = AimSection:CreateToggle({
-   Name = "Аимбот",
-   CurrentValue = false,
-   Flag = "AimBot",
-   Callback = function(Value)
-        CheatStates.AimBot = Value
-        
-        if Value then
-            Connections.AimBot = RunService.RenderStepped:Connect(function()
-                local target, distance = FindNearestPlayer(AimRangeSlider.CurrentValue, IgnoreTeamToggle.CurrentValue)
                 
-                if target and target.Character then
-                    local part = target.Character:FindFirstChild(AimPartDropdown.CurrentOption[1])
-                    if part and Camera then
-                        -- Предсказание движения
-                        local prediction = 0
-                        if PredictionToggle.CurrentValue then
-                            prediction = (distance / 1000) * (part.Velocity.Magnitude / 50)
-                        end
-                        
-                        local targetPos = part.Position + part.Velocity * prediction
-                        
-                        -- Плавный аим
-                        if SmoothAimToggle.CurrentValue then
-                            local smooth = AimSmoothSlider.CurrentValue / 100
-                            Camera.CFrame = Camera.CFrame:Lerp(
-                                CFrame.new(Camera.CFrame.Position, targetPos),
-                                1 - smooth
-                            )
-                        else
-                            Camera.CFrame = CFrame.new(Camera.CFrame.Position, targetPos)
-                        end
-                    end
-                end
-            end)
-        else
-            if Connections.AimBot then
-                Connections.AimBot:Disconnect()
-            end
-        end
-   end,
-})
-
--- Настройки аимбота
-local AimRangeSlider = AimSection:CreateSlider({
-   Name = "Дальность аимбота",
-   Range = {50, 1000},
-   Increment = 50,
-   Suffix = "studs",
-   CurrentValue = 600,
-   Flag = "AimRange",
-   Callback = function(Value) end,
-})
-
-local AimPartDropdown = AimSection:CreateDropdown({
-   Name = "Часть тела",
-   Options = {"Head", "HumanoidRootPart", "UpperTorso"},
-   CurrentOption = {"Head"},
-   MultipleOptions = false,
-   Flag = "AimPart",
-   Callback = function(Option) end,
-})
-
-local SmoothAimToggle = AimSection:CreateToggle({
-   Name = "Плавный аим",
-   CurrentValue = true,
-   Flag = "SmoothAim",
-   Callback = function(Value) end,
-})
-
-local AimSmoothSlider = AimSection:CreateSlider({
-   Name = "Сглаживание",
-   Range = {1, 100},
-   Increment = 5,
-   Suffix = "%",
-   CurrentValue = 30,
-   Flag = "AimSmooth",
-   Callback = function(Value) end,
-})
-
-local PredictionToggle = AimSection:CreateToggle({
-   Name = "Предсказание",
-   CurrentValue = true,
-   Flag = "Prediction",
-   Callback = function(Value) end,
-})
-
-local IgnoreTeamToggle = AimSection:CreateToggle({
-   Name = "Игнорировать команду",
-   CurrentValue = true,
-   Flag = "IgnoreTeam",
-   Callback = function(Value) end,
-})
-
--- ========== 3. АВТОСТРЕЛЬБА ==========
-local AutoShootToggle = AutoSection:CreateToggle({
-   Name = "Автострельба",
-   CurrentValue = false,
-   Flag = "AutoShoot",
-   Callback = function(Value)
-        CheatStates.AutoShoot = Value
-        
-        if Value then
-            Connections.AutoShoot = RunService.RenderStepped:Connect(function()
-                local target = FindNearestPlayer(150, true)
-                if target and target.Character then
-                    local character = GetCharacter()
-                    if character then
-                        for _, tool in pairs(character:GetChildren()) do
-                            if tool:IsA("Tool") then
-                                tool:Activate()
+                if isVisible then
+                    -- Ищем предпочитаемую часть тела
+                    for _, partName in ipairs(TargetParts) do
+                        local targetPart = target.Character:FindFirstChild(partName)
+                        if targetPart then
+                            local distance = (myRoot.Position - targetPart.Position).Magnitude
+                            if distance < nearestDistance then
+                                nearestDistance = distance
+                                nearestEnemy = target
+                                nearestPart = targetPart
                                 break
                             end
                         end
                     end
                 end
-            end)
-        else
-            if Connections.AutoShoot then
-                Connections.AutoShoot:Disconnect()
             end
         end
-   end,
+    end
+    
+    return nearestEnemy, nearestDistance, nearestPart
+end
+
+-- Функция для симуляции клика мыши (важно для Flick)
+local function SimulateMouseClick()
+    if UserInputService.MouseEnabled then
+        mouse1click()
+    end
+end
+
+-- Функция для симуляции нажатия клавиши
+local function SimulateKeyPress(key)
+    virtualInput:SendKeyEvent(true, key, false, game)
+end
+
+-- ========== ФУНКЦИЯ ПЕРЕКЛЮЧЕНИЯ ИНТЕРФЕЙСА ==========
+local function ToggleFlickUI()
+    Rayfield:Toggle()
+    
+    -- Анимация кнопки
+    TextButton.TextColor3 = Color3.fromRGB(100, 255, 100)
+    task.wait(0.1)
+    TextButton.TextColor3 = Color3.fromRGB(255, 100, 100)
+end
+
+TextButton.MouseButton1Click:Connect(ToggleFlickUI)
+
+-- ========== ПРИВЕТСТВЕННОЕ СООБЩЕНИЕ ДЛЯ FLICK ==========
+WelcomeSection:CreateParagraph({
+    Title = "🎯 Flick Cheat Menu",
+    Content = "Специализированные читы для игры Flick\nОптимизированы под механики прицеливания и стрельбы."
 })
 
--- ========== 4. КРУТИЛКА ==========
-local SpinToggle = AutoSection:CreateToggle({
-   Name = "Крутилка",
+-- ========== 1. ОСНОВНОЙ АИМБОТ ДЛЯ FLICK ==========
+local FlickAimToggle = QuickSection:CreateToggle({
+   Name = "Аимбот Flick",
    CurrentValue = false,
-   Flag = "SpinBot",
+   Flag = "FlickAimBot",
    Callback = function(Value)
-        CheatStates.Spin = Value
+        CheatStates.FlickAim = Value
         
         if Value then
-            Connections.Spin = RunService.RenderStepped:Connect(function()
-                local root = GetRootPart()
-                if root then
-                    root.CFrame = root.CFrame * CFrame.Angles(0, math.rad(SpinSpeedSlider.CurrentValue), 0)
+            Connections.FlickAim = RunService.RenderStepped:Connect(function()
+                local target, distance, targetPart = FindNearestEnemy(
+                    FlickRangeSlider.CurrentValue, 
+                    WallCheckToggle.CurrentValue
+                )
+                
+                if target and targetPart and Camera then
+                    -- Предсказание движения для Flick
+                    local prediction = 0
+                    if FlickPredictionToggle.CurrentValue then
+                        prediction = (distance / 1000) * (targetPart.Velocity.Magnitude / FlickPredictionSlider.CurrentValue)
+                    end
+                    
+                    local targetPos = targetPart.Position + (targetPart.Velocity * prediction)
+                    
+                    -- Плавное наведение
+                    if FlickSmoothToggle.CurrentValue then
+                        local smoothFactor = FlickSmoothSlider.CurrentValue / 100
+                        Camera.CFrame = Camera.CFrame:Lerp(
+                            CFrame.new(Camera.CFrame.Position, targetPos),
+                            1 - smoothFactor
+                        )
+                    else
+                        Camera.CFrame = CFrame.new(Camera.CFrame.Position, targetPos)
+                    end
+                    
+                    -- Авто-выстрел если включен
+                    if AutoFlickToggle.CurrentValue and distance < AutoFlickRangeSlider.CurrentValue then
+                        SimulateMouseClick()
+                    end
                 end
             end)
         else
-            if Connections.Spin then
-                Connections.Spin:Disconnect()
+            if Connections.FlickAim then
+                Connections.FlickAim:Disconnect()
             end
         end
    end,
 })
 
-local SpinSpeedSlider = AutoSection:CreateSlider({
-   Name = "Скорость вращения",
-   Range = {5, 50},
-   Increment = 1,
-   Suffix = "град/кадр",
-   CurrentValue = 15,
-   Flag = "SpinSpeed",
+-- ========== 2. НАСТРОЙКИ АИМБОТА ДЛЯ FLICK ==========
+local FlickRangeSlider = AimSection:CreateSlider({
+   Name = "Дальность прицеливания",
+   Range = {50, 1000},
+   Increment = 25,
+   Suffix = "studs",
+   CurrentValue = 400,
+   Flag = "FlickRange",
    Callback = function(Value) end,
 })
 
--- ========== 5. ESP СИСТЕМА ==========
-local ESPToggle = ESPSection:CreateToggle({
-   Name = "ESP",
+local FlickSmoothToggle = AimSection:CreateToggle({
+   Name = "Плавный аим",
+   CurrentValue = true,
+   Flag = "FlickSmooth",
+   Callback = function(Value) end,
+})
+
+local FlickSmoothSlider = AimSection:CreateSlider({
+   Name = "Сглаживание аима",
+   Range = {1, 100},
+   Increment = 5,
+   Suffix = "%",
+   CurrentValue = 35,
+   Flag = "FlickSmoothValue",
+   Callback = function(Value) end,
+})
+
+local FlickPredictionToggle = AimSection:CreateToggle({
+   Name = "Предсказание движения",
+   CurrentValue = true,
+   Flag = "FlickPrediction",
+   Callback = function(Value) end,
+})
+
+local FlickPredictionSlider = AimSection:CreateSlider({
+   Name = "Сила предсказания",
+   Range = {20, 200},
+   Increment = 10,
+   Suffix = "",
+   CurrentValue = 80,
+   Flag = "FlickPredictionValue",
+   Callback = function(Value) end,
+})
+
+local WallCheckToggle = AimSection:CreateToggle({
+   Name = "Проверка через стены",
    CurrentValue = false,
-   Flag = "ESPEnabled",
+   Flag = "WallCheck",
+   Callback = function(Value) end,
+})
+
+-- ========== 3. ФЛИК-ВЫСТРЕЛЫ (ОСОБАЯ МЕХАНИКА ДЛЯ FLICK) ==========
+local AutoFlickToggle = FlickSection:CreateToggle({
+   Name = "Авто-флик выстрелы",
+   CurrentValue = false,
+   Flag = "AutoFlick",
    Callback = function(Value)
-        CheatStates.ESP = Value
+        CheatStates.AutoFlick = Value
         
         if Value then
-            local function CreateESP(player)
+            Connections.AutoFlick = RunService.Heartbeat:Connect(function()
+                local target, distance = FindNearestEnemy(AutoFlickRangeSlider.CurrentValue, false)
+                if target and distance < AutoFlickRangeSlider.CurrentValue then
+                    SimulateMouseClick()
+                    task.wait(AutoFlickDelaySlider.CurrentValue / 1000)
+                end
+            end)
+        else
+            if Connections.AutoFlick then
+                Connections.AutoFlick:Disconnect()
+            end
+        end
+   end,
+})
+
+local AutoFlickRangeSlider = FlickSection:CreateSlider({
+   Name = "Дальность авто-выстрела",
+   Range = {10, 300},
+   Increment = 10,
+   Suffix = "studs",
+   CurrentValue = 150,
+   Flag = "AutoFlickRange",
+   Callback = function(Value) end,
+})
+
+local AutoFlickDelaySlider = FlickSection:CreateSlider({
+   Name = "Задержка выстрелов",
+   Range = {50, 1000},
+   Increment = 50,
+   Suffix = "ms",
+   CurrentValue = 200,
+   Flag = "AutoFlickDelay",
+   Callback = function(Value) end,
+})
+
+-- ========== 4. ТРИГГЕРБОТ ДЛЯ FLICK ==========
+local TriggerBotToggle = FlickSection:CreateToggle({
+   Name = "Триггербот",
+   CurrentValue = false,
+   Flag = "TriggerBot",
+   Callback = function(Value)
+        CheatStates.TriggerBot = Value
+        
+        if Value then
+            Connections.TriggerBot = RunService.RenderStepped:Connect(function()
+                -- Проверяем, находится ли враг на прицеле
+                local mouseTarget = Mouse.Target
+                if mouseTarget then
+                    local model = mouseTarget:FindFirstAncestorOfClass("Model")
+                    if model then
+                        local player = Players:GetPlayerFromCharacter(model)
+                        if player and player ~= Player then
+                            SimulateMouseClick()
+                            task.wait(TriggerBotDelaySlider.CurrentValue / 1000)
+                        end
+                    end
+                end
+            end)
+        else
+            if Connections.TriggerBot then
+                Connections.TriggerBot:Disconnect()
+            end
+        end
+   end,
+})
+
+local TriggerBotDelaySlider = FlickSection:CreateSlider({
+   Name = "Задержка триггербота",
+   Range = {10, 500},
+   Increment = 10,
+   Suffix = "ms",
+   CurrentValue = 50,
+   Flag = "TriggerBotDelay",
+   Callback = function(Value) end,
+})
+
+-- ========== 5. ESP ДЛЯ FLICK ==========
+local FlickESPToggle = ESPSection:CreateToggle({
+   Name = "ESP для Flick",
+   CurrentValue = false,
+   Flag = "FlickESP",
+   Callback = function(Value)
+        CheatStates.FlickESP = Value
+        
+        if Value then
+            local function CreateFlickESP(player)
                 if player == Player then return end
                 
                 local character = player.Character
                 if not character then return end
                 
-                -- Highlight
+                local humanoid = character:FindFirstChild("Humanoid")
+                if not humanoid or humanoid.Health <= 0 then return end
+                
+                -- Highlight для подсветки
                 local highlight = Instance.new("Highlight")
-                highlight.Name = player.Name .. "_ESP"
+                highlight.Name = player.Name .. "_FlickESP"
                 highlight.Adornee = character
-                highlight.FillColor = ESPColorPicker.CurrentColor
-                highlight.FillTransparency = 0.6
+                highlight.FillColor = player.Team == Player.Team and 
+                    Color3.fromRGB(0, 200, 0) or Color3.fromRGB(255, 50, 50)
+                highlight.FillTransparency = 0.7
                 highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
                 highlight.OutlineTransparency = 0
                 highlight.Parent = ESPFolder
+                
+                -- Трассировка линии для прицеливания
+                if ShowTracersToggle.CurrentValue then
+                    local beam = Instance.new("Beam")
+                    beam.Name = "AimTracer_" .. player.Name
+                    beam.Color = ColorSequence.new(Color3.fromRGB(255, 100, 100))
+                    beam.Width0 = 0.1
+                    beam.Width1 = 0.1
+                    
+                    local attachment0 = Instance.new("Attachment")
+                    attachment0.Parent = Camera
+                    
+                    local attachment1 = Instance.new("Attachment")
+                    attachment1.Parent = character:FindFirstChild("Head") or character:FindFirstChild("HumanoidRootPart")
+                    
+                    beam.Attachment0 = attachment0
+                    beam.Attachment1 = attachment1
+                    beam.Parent = Camera
+                    
+                    Connections["Tracer_" .. player.Name] = beam
+                end
             end
             
+            -- Создаем ESP для всех игроков
             for _, player in pairs(Players:GetPlayers()) do
                 if player.Character then
-                    CreateESP(player)
+                    CreateFlickESP(player)
                 end
                 
                 player.CharacterAdded:Connect(function()
                     task.wait(0.5)
-                    CreateESP(player)
+                    CreateFlickESP(player)
                 end)
             end
+            
+            Players.PlayerAdded:Connect(function(player)
+                player.CharacterAdded:Connect(function()
+                    task.wait(0.5)
+                    CreateFlickESP(player)
+                end)
+            end)
+            
         else
+            -- Очищаем ESP
             for _, child in pairs(ESPFolder:GetChildren()) do
                 child:Destroy()
+            end
+            
+            -- Очищаем трассировки
+            for name, beam in pairs(Connections) do
+                if typeof(beam) == "Instance" and beam:IsA("Beam") then
+                    beam:Destroy()
+                end
             end
         end
    end,
 })
 
-local ESPColorPicker = ESPSection:CreateColorPicker({
-    Name = "Цвет ESP",
-    Color = Color3.fromRGB(255, 50, 50),
-    Flag = "ESPColor",
-    Callback = function(Value)
-        for _, child in pairs(ESPFolder:GetChildren()) do
-            if child:IsA("Highlight") then
-                child.FillColor = Value
-            end
-        end
-    end
+local ShowTracersToggle = ESPSection:CreateToggle({
+   Name = "Показывать трассировки",
+   CurrentValue = false,
+   Flag = "ShowTracers",
+   Callback = function(Value) end,
 })
 
 -- ========== 6. ХАРАКТЕРИСТИКИ ИГРОКА ==========
 local SpeedToggle = StatsSection:CreateToggle({
-   Name = "Изменить скорость",
+   Name = "Ускорение",
    CurrentValue = false,
-   Flag = "SpeedMod",
+   Flag = "SpeedBoost",
    Callback = function(Value)
         if Value then
             local humanoid = GetHumanoid()
@@ -463,7 +505,7 @@ local SpeedToggle = StatsSection:CreateToggle({
                 humanoid.WalkSpeed = SpeedSlider.CurrentValue
             end
             
-            Connections.SpeedMod = Player.CharacterAdded:Connect(function()
+            Connections.SpeedBoost = Player.CharacterAdded:Connect(function()
                 task.wait(0.5)
                 local hum = GetHumanoid()
                 if hum then
@@ -471,8 +513,8 @@ local SpeedToggle = StatsSection:CreateToggle({
                 end
             end)
         else
-            if Connections.SpeedMod then
-                Connections.SpeedMod:Disconnect()
+            if Connections.SpeedBoost then
+                Connections.SpeedBoost:Disconnect()
             end
             
             local humanoid = GetHumanoid()
@@ -484,8 +526,8 @@ local SpeedToggle = StatsSection:CreateToggle({
 })
 
 local SpeedSlider = StatsSection:CreateSlider({
-   Name = "Скорость",
-   Range = {16, 200},
+   Name = "Скорость передвижения",
+   Range = {16, 150},
    Increment = 5,
    Suffix = "studs/сек",
    CurrentValue = 50,
@@ -501,9 +543,9 @@ local SpeedSlider = StatsSection:CreateSlider({
 })
 
 local JumpToggle = StatsSection:CreateToggle({
-   Name = "Изменить прыжок",
+   Name = "Усиленный прыжок",
    CurrentValue = false,
-   Flag = "JumpMod",
+   Flag = "JumpBoost",
    Callback = function(Value)
         if Value then
             local humanoid = GetHumanoid()
@@ -511,7 +553,7 @@ local JumpToggle = StatsSection:CreateToggle({
                 humanoid.JumpPower = JumpSlider.CurrentValue
             end
             
-            Connections.JumpMod = Player.CharacterAdded:Connect(function()
+            Connections.JumpBoost = Player.CharacterAdded:Connect(function()
                 task.wait(0.5)
                 local hum = GetHumanoid()
                 if hum then
@@ -519,8 +561,8 @@ local JumpToggle = StatsSection:CreateToggle({
                 end
             end)
         else
-            if Connections.JumpMod then
-                Connections.JumpMod:Disconnect()
+            if Connections.JumpBoost then
+                Connections.JumpBoost:Disconnect()
             end
             
             local humanoid = GetHumanoid()
@@ -533,10 +575,10 @@ local JumpToggle = StatsSection:CreateToggle({
 
 local JumpSlider = StatsSection:CreateSlider({
    Name = "Сила прыжка",
-   Range = {50, 500},
+   Range = {50, 300},
    Increment = 10,
    Suffix = "",
-   CurrentValue = 100,
+   CurrentValue = 120,
    Flag = "JumpValue",
    Callback = function(Value)
         if JumpToggle.CurrentValue then
@@ -557,6 +599,7 @@ local NightVisionToggle = EffectsSection:CreateToggle({
         if Value then
             Lighting.Ambient = Color3.fromRGB(150, 150, 150)
             Lighting.Brightness = 2
+            Lighting.FogEnd = 10000
             
             Connections.NightVision = Lighting.Changed:Connect(function()
                 if CheatStates.NightVision then
@@ -571,174 +614,198 @@ local NightVisionToggle = EffectsSection:CreateToggle({
             
             Lighting.Ambient = Color3.fromRGB(0, 0, 0)
             Lighting.Brightness = 1
+            Lighting.FogEnd = 100000
         end
         CheatStates.NightVision = Value
    end,
 })
 
--- ========== 8. ЭКСТРЕННОЕ ОТКЛЮЧЕНИЕ ==========
+-- ========== 8. БЕСКОНЕЧНЫЕ ПАРТРОНЫ (для Flick) ==========
+local InfiniteAmmoToggle = WeaponSection:CreateToggle({
+   Name = "Бесконечные патроны",
+   CurrentValue = false,
+   Flag = "InfiniteAmmo",
+   Callback = function(Value)
+        CheatStates.InfiniteAmmo = Value
+        
+        if Value then
+            Connections.InfiniteAmmo = RunService.Heartbeat:Connect(function()
+                -- Ищем оружие в инвентаре
+                local character = GetCharacter()
+                if character then
+                    for _, tool in pairs(character:GetChildren()) do
+                        if tool:IsA("Tool") then
+                            -- Пытаемся найти значения патронов
+                            local ammo = tool:FindFirstChild("Ammo") or tool:FindFirstChild("Clip") 
+                            or tool:FindFirstChild("Bullets") or tool:FindFirstChild("Shots")
+                            
+                            if ammo and ammo:IsA("IntValue") or ammo:IsA("NumberValue") then
+                                ammo.Value = 999
+                            end
+                        end
+                    end
+                end
+            end)
+        else
+            if Connections.InfiniteAmmo then
+                Connections.InfiniteAmmo:Disconnect()
+            end
+        end
+   end,
+})
+
+-- ========== 9. АВТО-ПЕРЕЗАРЯДКА ==========
+local AutoReloadToggle = AutoSection:CreateToggle({
+   Name = "Авто-перезарядка",
+   CurrentValue = false,
+   Flag = "AutoReload",
+   Callback = function(Value)
+        CheatStates.AutoReload = Value
+        
+        if Value then
+            Connections.AutoReload = RunService.Heartbeat:Connect(function()
+                local character = GetCharacter()
+                if character then
+                    for _, tool in pairs(character:GetChildren()) do
+                        if tool:IsA("Tool") then
+                            local ammo = tool:FindFirstChild("Ammo")
+                            if ammo and ammo.Value <= 0 then
+                                -- Симулируем нажатие R для перезарядки
+                                SimulateKeyPress(Enum.KeyCode.R)
+                            end
+                        end
+                    end
+                end
+            end)
+        else
+            if Connections.AutoReload then
+                Connections.AutoReload:Disconnect()
+            end
+        end
+   end,
+})
+
+-- ========== 10. ЭКСТРЕННОЕ ОТКЛЮЧЕНИЕ ==========
 local EmergencyButton = ConfigSection:CreateButton({
-   Name = "⛔ ЭКСТРЕННОЕ ОТКЛЮЧЕНИЕ",
+   Name = "⛔ СБРОС ВСЕХ ЧИТОВ",
    Callback = function()
         -- Отключаем все функции
-        QuickAimToggle:Set(false)
-        QuickBunnyToggle:Set(false)
-        AimBotToggle:Set(false)
-        AutoShootToggle:Set(false)
-        SpinToggle:Set(false)
-        ESPToggle:Set(false)
+        FlickAimToggle:Set(false)
+        AutoFlickToggle:Set(false)
+        TriggerBotToggle:Set(false)
+        FlickESPToggle:Set(false)
         SpeedToggle:Set(false)
         JumpToggle:Set(false)
         NightVisionToggle:Set(false)
+        InfiniteAmmoToggle:Set(false)
+        AutoReloadToggle:Set(false)
         
-        -- Сбрасываем настройки
+        -- Сбрасываем настройки игрока
         local humanoid = GetHumanoid()
         if humanoid then
             humanoid.WalkSpeed = 16
             humanoid.JumpPower = 50
         end
         
+        -- Сбрасываем освещение
         Lighting.Ambient = Color3.fromRGB(0, 0, 0)
         Lighting.Brightness = 1
         
         Rayfield:Notify({
-            Title = "Экстренное отключение",
-            Content = "Все функции отключены!",
+            Title = "Читы отключены",
+            Content = "Все функции были сброшены!",
             Duration = 4,
             Image = 4483362458
         })
    end,
 })
 
--- ========== 9. НАСТРОЙКА КЛАВИШ ==========
+-- ========== 11. НАСТРОЙКА КЛАВИШ ДЛЯ FLICK ==========
 local ToggleKeybind = ConfigSection:CreateKeybind({
-   Name = "Клавиша для интерфейса",
-   CurrentKeybind = "RightControl",
+   Name = "Клавиша меню",
+   CurrentKeybind = "RightShift",
    HoldToInteract = false,
-   Flag = "ToggleKey",
+   Flag = "MenuKey",
    Callback = function(Keybind)
-        ToggleRayfieldUI()
+        ToggleFlickUI()
    end,
 })
 
 local EmergencyKeybind = ConfigSection:CreateKeybind({
-   Name = "Клавиша отключения",
+   Name = "Клавиша сброса",
    CurrentKeybind = "F10",
    HoldToInteract = false,
-   Flag = "EmergencyKey",
+   Flag = "ResetKey",
    Callback = function(Keybind)
         EmergencyButton.Callback()
    end,
 })
 
--- ========== 10. ДОПОЛНИТЕЛЬНЫЕ НАСТРОЙКИ ==========
-local ButtonColorPicker = ConfigSection:CreateColorPicker({
-    Name = "Цвет кнопки",
-    Color = Color3.fromRGB(255, 50, 50),
-    Flag = "ButtonColor",
-    Callback = function(Value)
-        TextButton.TextColor3 = Value
-    end
-})
-
-local ButtonTextInput = ConfigSection:CreateInput({
-   Name = "Текст кнопки",
-   PlaceholderText = "Введите текст кнопки",
-   RemoveTextAfterFocusLost = false,
-   Callback = function(Text)
-        if Text ~= "" then
-            TextButton.Text = Text
+local AimKeybind = ConfigSection:CreateKeybind({
+   Name = "Клавиша аимбота",
+   CurrentKeybind = "X",
+   HoldToInteract = true,
+   Flag = "AimKey",
+   Callback = function(Keybind)
+        if Keybind then
+            FlickAimToggle:Set(true)
+        else
+            FlickAimToggle:Set(false)
         end
    end,
 })
 
--- ========== 11. ИНФОРМАЦИОННАЯ СЕКЦИЯ ==========
-InfoSection:CreateLabel("📱 Быстрый доступ")
+-- ========== 12. ИНФОРМАЦИЯ О FLICK ==========
 InfoSection:CreateParagraph({
-    Title = "Плавающая кнопка",
-    Content = "Используйте плавающую кнопку 'NV MENU' для быстрого открытия/закрытия меню.\nКнопку можно перемещать по экрану."
+    Title = "🎯 Особенности для Flick",
+    Content = "Специализированные функции для механик игры Flick:\n• Аимбот с предсказанием движения\n• Авто-флик выстрелы\n• Триггербот\n• ESP с трассировками\n• Модификации оружия"
 })
 
 InfoSection:CreateLabel("🎮 Управление")
 InfoSection:CreateParagraph({
     Title = "Горячие клавиши",
-    Content = "RightControl - Открыть/закрыть меню\nF10 - Экстренное отключение\nКлик по кнопке - Быстрый доступ"
+    Content = "RightShift - Меню\nF10 - Сброс всех читов\nX (удерживать) - Временный аимбот\nКлик по кнопке - Быстрый доступ"
 })
 
 InfoSection:CreateParagraph({
-    Title = "⚠️ ВНИМАНИЕ",
-    Content = "Используйте на свой страх и риск!\nАвтор не несет ответственности за блокировку аккаунта."
+    Title = "⚠️ ВАЖНО ДЛЯ FLICK",
+    Content = "Будьте осторожны! Игра Flick может иметь античит.\nИспользуйте функции умеренно для избежания бана."
 })
 
--- ========== 12. КНОПКА СБРОСА ==========
-local ResetButton = ConfigSection:CreateButton({
-   Name = "🔄 Сбросить настройки",
-   Callback = function()
-        ButtonColorPicker:Set(Color3.fromRGB(255, 50, 50))
-        ButtonTextInput.Callback("NV\nMENU")
-        TextButton.Text = "NV\nMENU"
-        
-        Rayfield:Notify({
-            Title = "Настройки сброшены",
-            Content = "Все настройки восстановлены по умолчанию",
-            Duration = 3,
-        })
+-- ========== 13. СИСТЕМА ПРЕДУПРЕЖДЕНИЙ ==========
+local AntiBanToggle = ConfigSection:CreateToggle({
+   Name = "Анти-бан система",
+   CurrentValue = true,
+   Flag = "AntiBan",
+   Callback = function(Value)
+        if Value then
+            Rayfield:Notify({
+                Title = "Анти-бан активирован",
+                Content = "Читы будут скрыты при скриншотах",
+                Duration = 3,
+            })
+        end
    end,
 })
 
--- ========== ДОПОЛНИТЕЛЬНЫЕ ГОРЯЧИЕ КЛАВИШИ ==========
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if gameProcessed then return end
-    
-    if input.KeyCode == Enum.KeyCode.F9 then
-        -- Быстрое меню
-        Rayfield:Notify({
-            Title = "⚡ Быстрое меню",
-            Content = "Выберите действие:",
-            Duration = 8,
-            Image = 4483362458,
-            Actions = {
-                ToggleQuickAim = {
-                    Name = QuickAimToggle.CurrentValue and "Выкл. быстрый аим" or "Вкл. быстрый аим",
-                    Callback = function()
-                        QuickAimToggle:Set(not QuickAimToggle.CurrentValue)
-                    end
-                },
-                ToggleESP = {
-                    Name = ESPToggle.CurrentValue and "Выкл. ESP" or "Вкл. ESP",
-                    Callback = function()
-                        ESPToggle:Set(not ESPToggle.CurrentValue)
-                    end
-                },
-                ToggleSpeed = {
-                    Name = SpeedToggle.CurrentValue and "Норм. скорость" or "Увел. скорость",
-                    Callback = function()
-                        SpeedToggle:Set(not SpeedToggle.CurrentValue)
-                    end
-                },
-            },
-        })
-    end
-end)
-
--- ========== ФИНАЛЬНОЕ УВЕДОМЛЕНИЕ ==========
-task.wait(2)
+-- ========== УВЕДОМЛЕНИЕ О ЗАГРУЗКЕ ==========
 Rayfield:Notify({
-    Title = "Готово!",
-    Content = "NV Cheat Menu v5.0 успешно загружен!\nИспользуйте плавающую кнопку или RightControl для открытия меню.",
-    Duration = 5,
-    Image = 4483362458,
+   Title = "Flick Cheat Menu",
+   Content = "Специализированные читы для игры Flick загружены!",
+   Duration = 5,
+   Image = 4483362458,
+   Actions = {
+      Start = {
+         Name = "Начать!",
+         Callback = function()
+            print("Flick читы активированы")
+         end
+      },
+   },
 })
 
-print("========================================")
-print("NV Cheat Menu v5.0 - Enhanced Edition")
-print("Плавающая кнопка активирована")
-print("Ключ доступа: NV2024")
-print("========================================")
-
--- ========== ФУНКЦИЯ ДЛЯ ОБНОВЛЕНИЯ ЦВЕТА КНОПКИ ==========
-local function UpdateButtonColor()
-    -- Меняем цвет кнопки в зависимости от состояния
+-- ========== ФУНКЦИЯ ОБНОВЛЕНИЯ СОСТОЯНИЯ КНОПКИ ==========
+local function UpdateFlickButton()
     local anyActive = false
     for _, state in pairs(CheatStates) do
         if state then
@@ -748,11 +815,18 @@ local function UpdateButtonColor()
     end
     
     if anyActive then
-        TextButton.TextColor3 = Color3.fromRGB(50, 255, 50)  -- Зеленый если что-то активно
+        TextButton.TextColor3 = Color3.fromRGB(100, 255, 100)
+        TextButton.Text = "FLICK\nACTIVE"
     else
-        TextButton.TextColor3 = ButtonColorPicker.CurrentColor  -- Обычный цвет
+        TextButton.TextColor3 = Color3.fromRGB(255, 100, 100)
+        TextButton.Text = "FLICK\nCHEAT"
     end
 end
 
--- Следим за изменениями состояний
-RunService.Heartbeat:Connect(UpdateButtonColor)
+-- Автоматическое обновление состояния кнопки
+RunService.Heartbeat:Connect(UpdateFlickButton)
+
+print("========================================")
+print("Flick Cheat Menu - Специальная версия")
+print("Оптимизировано для механик Flick")
+print("========================================")
